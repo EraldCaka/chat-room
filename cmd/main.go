@@ -14,7 +14,6 @@ import (
 func main() {
 	util.InitEnvironmentVariables()
 	dbConn, err := db.NewDatabase()
-	log.Println(dbConn.GetDB())
 	if err != nil {
 		log.Fatalf("could not initialize database connection: %s", err)
 	}

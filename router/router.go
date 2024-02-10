@@ -2,7 +2,7 @@ package router
 
 import (
 	"github.com/EraldCaka/chat-room/internal/handlers"
-	"github.com/EraldCaka/chat-room/internal/pkg/middleware"
+	"github.com/EraldCaka/chat-room/internal/middleware"
 	"github.com/EraldCaka/chat-room/internal/ws"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
