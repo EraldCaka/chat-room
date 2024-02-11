@@ -1,6 +1,3 @@
-include .env
-export
-
 build:
 	@go build -o bin/api/main cmd/main.go
 
@@ -8,8 +5,8 @@ run: build
 	@./bin/api/main
 
 migrate:
-	@dotenv -f .env migrate -path db/migrations -database "$(DB_CONN_STR)" -verbose up
+	migrate -path db/migrations -database "postgresql://root:password@localhost:5433/go-chat?sslmode=disable" -verbose up
 
 drop:
-	@dotenv -f .env migrate -path db/migrations -database "$(DB_CONN_STR)" -verbose down
+	migrate -path db/migrations -database "postgresql://root:password@localhost:5433/go-chat?sslmode=disable" -verbose down
 
