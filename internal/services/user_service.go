@@ -9,10 +9,6 @@ import (
 	"time"
 )
 
-const (
-	secretKey = "secret"
-)
-
 type service struct {
 	types.Repository
 	timeout time.Duration
@@ -83,7 +79,7 @@ func (s *service) Login(c context.Context, req *types.LoginUserReq) (*types.Logi
 		},
 	})
 
-	ss, err := token.SignedString([]byte(secretKey))
+	ss, err := token.SignedString([]byte(util.SECRET_KEY))
 	if err != nil {
 		return &types.LoginUserRes{}, err
 	}
