@@ -22,14 +22,25 @@ type CreateRoomReq struct {
 	Name string `json:"name"`
 }
 
+type RoomActiveClients struct {
+	ID          string   `json:"id"`
+	Clients     []string `json:"clients"`
+	ClientCount int      `json:"clientCount"`
+}
+
 func (h *Handler) CreateRoom(c *gin.Context) {
 	var req CreateRoomReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	if h.hub.Rooms[req.ID] != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": types.NewError(400, "Room Already Exists")})
+		return
+	}
+
 	if req.Name == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": types.NewError(222, "name is empty, should not be empty")})
+		c.JSON(http.StatusBadRequest, gin.H{"error": types.NewError(400, "Name is empty, Name should not be empty")})
 		return
 	}
 
@@ -40,6 +51,32 @@ func (h *Handler) CreateRoom(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, req)
+}
+
+func (h *Handler) GetRoomActiveClients(c *gin.Context) {
+	roomID := c.Param("roomID")
+	if roomID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": types.NewError(400, "ID is empty,ID should not be empty")})
+		return
+	}
+	if h.hub.Rooms[roomID] == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": types.NewError(400, "This room Id doesn't exist")})
+		return
+	}
+
+	var clients []string
+	var clientCount int
+	for _, client := range h.hub.Rooms[roomID].Clients {
+		clients = append(clients, client.Username)
+		clientCount++
+
+	}
+	response := &RoomActiveClients{
+		ID:          roomID,
+		Clients:     clients,
+		ClientCount: clientCount,
+	}
+	c.JSON(http.StatusOK, response)
 }
 
 var upgrader = websocket.Upgrader{
@@ -83,43 +120,29 @@ func (h *Handler) JoinRoom(c *gin.Context) {
 }
 
 type RoomRes struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	Clients     []string `json:"clients"`
+	ClientCount int      `json:"clientCount"`
 }
 
 func (h *Handler) GetRooms(c *gin.Context) {
 	rooms := make([]RoomRes, 0)
 
 	for _, r := range h.hub.Rooms {
+		var clients []string
+		var clientCount int
+		for _, client := range r.Clients {
+			clients = append(clients, client.Username)
+			clientCount++
+		}
 		rooms = append(rooms, RoomRes{
-			ID:   r.ID,
-			Name: r.Name,
+			ID:          r.ID,
+			Name:        r.Name,
+			ClientCount: clientCount,
+			Clients:     clients,
 		})
 	}
 
 	c.JSON(http.StatusOK, rooms)
-}
-
-type ClientRes struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-}
-
-func (h *Handler) GetClients(c *gin.Context) {
-	var clients []ClientRes
-	roomId := c.Param("roomId")
-
-	if _, ok := h.hub.Rooms[roomId]; !ok {
-		clients = make([]ClientRes, 0)
-		c.JSON(http.StatusOK, clients)
-	}
-
-	for _, c := range h.hub.Rooms[roomId].Clients {
-		clients = append(clients, ClientRes{
-			ID:       c.ID,
-			Username: c.Username,
-		})
-	}
-
-	c.JSON(http.StatusOK, clients)
 }
