@@ -41,3 +41,12 @@ func EmptyCookieEnv() error {
 	}
 	return nil
 }
+func GetCookieEnv() {
+	err := godotenv.Load("cookies.env")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	COOKIE_NAME = os.Getenv("COOKIE_NAME")
+	COOKIE_VALUE = os.Getenv("COOKIE_VALUE")
+}

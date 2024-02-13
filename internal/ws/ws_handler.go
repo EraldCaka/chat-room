@@ -1,10 +1,10 @@
 package ws
 
 import (
-	"net/http"
-
+	"github.com/EraldCaka/chat-room/internal/types"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"net/http"
 )
 
 type Handler struct {
@@ -26,6 +26,10 @@ func (h *Handler) CreateRoom(c *gin.Context) {
 	var req CreateRoomReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if req.Name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": types.NewError(222, "name is empty, should not be empty")})
 		return
 	}
 

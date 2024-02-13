@@ -48,19 +48,20 @@ func (h *Handler) Login(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie("jwt", u.AccessToken, 60*60*24, "/", "localhost", false, true)
+	c.SetCookie("jwt", u.AccessToken, 60*60*24, "/", "localhost", false, false)
 	util.StoreCookieToEnv("jwt", u.AccessToken)
 	c.JSON(http.StatusOK, u)
 }
 
 func (h *Handler) Logout(c *gin.Context) {
-	c.SetCookie("jwt", "", -1, "", "", false, true)
+	c.SetCookie("jwt", "", -1, "", "", false, false)
 	util.EmptyCookieEnv()
 	c.JSON(http.StatusOK, gin.H{"message": "logout successful"})
 }
 
 func (h *Handler) GetJWTFromCookie(c *gin.Context) {
-	jwtCookie, err := c.Cookie("jwt")
+	util.GetCookieEnv()
+	jwtCookie, err := c.Cookie(util.COOKIE_NAME)
 
 	token, err := ValidateJWT(jwtCookie, []byte(util.SECRET_KEY))
 	if err != nil {
