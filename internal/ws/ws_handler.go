@@ -64,13 +64,13 @@ func (h *Handler) GetRoomActiveClients(c *gin.Context) {
 		return
 	}
 
-	var clients []string
+	clients := make([]string, 0)
 	var clientCount int
 	for _, client := range h.hub.Rooms[roomID].Clients {
 		clients = append(clients, client.Username)
 		clientCount++
-
 	}
+
 	response := &RoomActiveClients{
 		ID:          roomID,
 		Clients:     clients,
@@ -145,4 +145,10 @@ func (h *Handler) GetRooms(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, rooms)
+}
+
+func (h *Handler) CloseWSConnection(c *gin.Context) {
+	client := h.hub.Rooms[c.Param("roomID")].Clients[c.Param("userID")]
+	client.Conn.Close()
+	c.JSON(http.StatusOK, types.NewError(202, "User Disconnected"))
 }
