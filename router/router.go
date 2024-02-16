@@ -36,7 +36,7 @@ func InitRouter(userHandler *handlers.Handler, wsHandler *ws.Handler) {
 	r.GET("/ws/joinRoom/:roomId", wsHandler.JoinRoom)
 	r.GET("/ws/getRooms", wsHandler.GetRooms)
 	r.GET("/ws/room/clients/:roomID", wsHandler.GetRoomActiveClients)
-	r.GET("/ws/client/close/:userid", wsHandler.CloseWSConnection)
+	r.GET("/ws/client/close/:userID/:roomID", wsHandler.CloseWSConnection)
 
 }
 

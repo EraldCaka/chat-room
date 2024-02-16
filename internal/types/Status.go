@@ -15,3 +15,16 @@ func NewError(code int, err string) Error {
 		Err:  err,
 	}
 }
+
+type Response struct {
+	Response string `json:"response"`
+	Message  string `json:"message"`
+}
+
+func NewResponse(response string, message string) Response {
+	return Response{
+		Response: response,
+		Message:  message,
+	}
+
+}

@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"fmt"
 	"github.com/EraldCaka/chat-room/internal/types"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -120,10 +121,9 @@ func (h *Handler) JoinRoom(c *gin.Context) {
 }
 
 type RoomRes struct {
-	ID          string   `json:"id"`
-	Name        string   `json:"name"`
-	Clients     []string `json:"clients"`
-	ClientCount int      `json:"clientCount"`
+	ID      string   `json:"id"`
+	Name    string   `json:"name"`
+	Clients []string `json:"clients"`
 }
 
 func (h *Handler) GetRooms(c *gin.Context) {
@@ -137,10 +137,9 @@ func (h *Handler) GetRooms(c *gin.Context) {
 			clientCount++
 		}
 		rooms = append(rooms, RoomRes{
-			ID:          r.ID,
-			Name:        r.Name,
-			ClientCount: clientCount,
-			Clients:     clients,
+			ID:      r.ID,
+			Name:    r.Name,
+			Clients: clients,
 		})
 	}
 
@@ -148,7 +147,18 @@ func (h *Handler) GetRooms(c *gin.Context) {
 }
 
 func (h *Handler) CloseWSConnection(c *gin.Context) {
+
+	if room := h.hub.Rooms[c.Param("roomID")]; room == nil || room.ID == "" {
+		fmt.Println(room, "2")
+		c.JSON(http.StatusBadRequest, types.NewError(http.StatusBadRequest, "bad request(roomID)"))
+		return
+	}
 	client := h.hub.Rooms[c.Param("roomID")].Clients[c.Param("userID")]
+	if cl := client; cl == nil || cl.ID == "" {
+		c.JSON(http.StatusBadRequest, types.NewError(http.StatusBadRequest, "bad request(userID)"))
+		return
+	}
+
 	client.Conn.Close()
-	c.JSON(http.StatusOK, types.NewError(202, "User Disconnected"))
+	c.JSON(http.StatusOK, types.NewResponse("response", "User disconnected successfully"))
 }
